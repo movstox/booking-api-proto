@@ -39,27 +39,33 @@ module V1
     end
 
     def reserve_seat(input)
+      bookings_on_date = find_bookings(input)
       booking_for(input).bind do |booking|
-        action_result =
+        rows_updated =
           conn.transaction do
             if fully_booked?(booking)
               return Failure('Movie for this date is fully booked')
             end
 
-            seats_currently_occupied = booking.dig('seats_occupied').to_i
+            seats_currently_occupied = booking.dig(:seats_occupied).to_i
             booking.update(seats_occupied: seats_currently_occupied + 1)
+            bookings_on_date.update(seats_occupied: seats_currently_occupied + 1)
           end
-        return Failure('Cannot book a seat') if action_result.nil?
+        return Failure('Cannot book a seat') if rows_updated != 1
 
         Success(booking)
       end
     end
 
-    def find_booking(input)
+    def find_bookings(input)
       table_for(:bookings).where(
         movie_id: input['movie_id'],
         on_date: input['on_date']
-      ).first
+      )
+    end
+
+    def find_booking(input)
+      find_bookings(input).first
     end
 
     def find_movie(id)
