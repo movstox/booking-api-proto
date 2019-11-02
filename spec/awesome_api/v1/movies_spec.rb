@@ -48,6 +48,7 @@ describe AwesomeApi::V1::Movies, type: :api do
       it_behaves_like 'endpoint returning error message', 422, 'Provide valid week day abbr'
     end
     context 'without day_of_week info' do
+      let(:api_params) { {} }
       it_behaves_like 'endpoint returning error message', 400, 'day_of_week is missing'
     end
   end
@@ -67,7 +68,7 @@ describe AwesomeApi::V1::Movies, type: :api do
     end
 
     context 'without movies' do
-      let(:api_params) { { day_of_week: week_day_abbr_for(Date.tomorrow) } }
+      let(:api_params) { { day_of_week: week_day_abbr_for(Date.today + 1.month) } }
 
       it_behaves_like 'endpoint responding with', 200, Array
       it 'returns nothing' do

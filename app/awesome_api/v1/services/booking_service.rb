@@ -4,6 +4,8 @@ require_relative 'db_service'
 require 'dry/transaction'
 
 module V1
+  MAX_SEATS_PER_MOVIE = 10
+
   class CreateBooking
     include DbService
     include Dry::Transaction
@@ -81,7 +83,7 @@ module V1
     end
 
     def fully_booked?(booking)
-      booking[:seats_occupied].to_i == 10
+      booking[:seats_occupied].to_i == V1::MAX_SEATS_PER_MOVIE
     end
 
     def create_booking(booking_params)

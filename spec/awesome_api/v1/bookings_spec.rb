@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 describe AwesomeApi::V1::Bookings, type: :api do
-  shared_context 'booking info' do
+  shared_context 'with booking info' do
     let(:api_schema) do
       Dry::Schema.JSON do
         required(:on_date).filled(:date)
@@ -15,7 +15,7 @@ describe AwesomeApi::V1::Bookings, type: :api do
     let(:movie_params) { db_movie_params }
 
     before do
-      @movie_id = db_connection.from(:movies).insert(db_movie_params)
+      @movie_id = db_connection.from(:movies).insert(movie_params)
     end
 
     after do
@@ -27,11 +27,11 @@ describe AwesomeApi::V1::Bookings, type: :api do
     let(:bookings) { db_connection.from(:bookings) }
 
     before do
-      @booking_id1 = bookings.insert(booking_params)
+      @booking_id = bookings.insert(booking_params)
     end
 
     after do
-      bookings.where { id == @booking_id1 }.delete
+      bookings.where { id == @booking_id }.delete
     end
   end
 
@@ -39,7 +39,7 @@ describe AwesomeApi::V1::Bookings, type: :api do
     let(:bookings) { db_connection.from(:bookings) }
 
     before do
-      @booking_id2 = bookings.insert(booking_params.merge(seats_occupied: 10))
+      @booking_id2 = bookings.insert(booking_params.merge(seats_occupied: V1::MAX_SEATS_PER_MOVIE))
     end
 
     after do
@@ -58,7 +58,7 @@ describe AwesomeApi::V1::Bookings, type: :api do
 
   describe 'POST /bookings' do
     include_context 'calls api'
-    include_context 'booking info'
+    include_context 'with booking info'
 
     let(:api_params) { booking_params }
 
@@ -102,7 +102,7 @@ describe AwesomeApi::V1::Bookings, type: :api do
 
   describe format('GET /bookings?date_range[from]=%s&date_range[to]=%s', Date.today, Date.tomorrow) do
     include_context 'calls api'
-    include_context 'booking info'
+    include_context 'with booking info'
     include_context 'with one booking created'
 
     context 'given valid date range' do
@@ -129,7 +129,7 @@ describe AwesomeApi::V1::Bookings, type: :api do
 
   describe 'GET /bookings?on_date=%s' % Date.today do
     include_context 'calls api'
-    include_context 'booking info'
+    include_context 'with booking info'
     include_context 'with one booking created'
 
     let(:api_params) { { on_date: Date.today } }
