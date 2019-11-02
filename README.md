@@ -24,6 +24,9 @@ My goal was to make it readable and simple so it is not perfect and can be impro
 
 - api url is [https://movstox-api-test.herokuapp.com/api/v1](https://movstox-api-test.herokuapp.com/api/v1)
 
+- or you can deploy by yourself via
+  [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
+
 # Info on API requests
 
 \*`GET /api/v1/movies?day_of_week=Fri`

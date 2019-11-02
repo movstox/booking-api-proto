@@ -1,0 +1,6 @@
+{
+  "name": "Booking API proto",
+  "description": "Simple concept using Grape gem for booking movie on a given date",
+  "repository": "https://github.com/movstox/booking-api-proto",
+  "keywords": ["grape", "ruby"]
+}
