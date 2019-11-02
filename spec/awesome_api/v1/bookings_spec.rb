@@ -52,15 +52,7 @@ describe AwesomeApi::V1::Bookings, type: :api do
     let(:api_params) { {} }
 
     context 'without range provided' do
-      it 'returns 422' do
-        expect(api_response.status).to eq(422)
-      end
-
-      it 'requires on_date or date_range params' do
-        expect(api_response_as_json).to be_a_kind_of Hash
-        expect(api_response_as_json).to include 'error'
-        expect(api_response_as_json['error']).to include('date range is not specified: use on_date or date_range param')
-      end
+      it_behaves_like 'endpoint returning error message', 422, 'date range is not specified: use on_date or date_range param'
     end
   end
 
@@ -72,62 +64,27 @@ describe AwesomeApi::V1::Bookings, type: :api do
 
     context 'when movie is not screened' do
       let(:api_params) { booking_params.merge(on_date: Date.tomorrow) }
-
-      it 'returns 422' do
-        expect(api_response.status).to eq(422)
-      end
-
-      it 'returns error' do
-        expect(api_response_as_json.keys).to include('error')
-        expect(api_response_as_json['error']).to eq('Movie is not screened on this date')
-      end
+      it_behaves_like 'endpoint returning error message', 422, 'Movie is not screened on this date'
     end
 
     context 'for non-existing movies' do
       let(:api_params) { booking_params.merge(movie_id: -1) }
-      it 'returns 422' do
-        expect(api_response.status).to eq(422)
-      end
-
-      it 'returns error' do
-        expect(api_response_as_json.keys).to include('error')
-        expect(api_response_as_json['error']).to eq('Movie is not found')
-      end
+      it_behaves_like 'endpoint returning error message', 422, 'Movie is not found'
     end
 
     context 'booking date is in the past' do
-      shared_context 'with one booking created'
-
+      include_context 'with one booking created'
       let(:api_params) { booking_params.merge(on_date: Date.today - 1.day) }
-
-      it 'returns 422' do
-        expect(api_response.status).to eq(422)
-      end
-
-      it 'returns error' do
-        expect(api_response_as_json.keys).to include('error')
-        expect(api_response_as_json['error']).to eq('Booking date cannot be in the past')
-      end
+      it_behaves_like 'endpoint returning error message', 422, 'Booking date cannot be in the past'
     end
 
     context 'does not allow overbooking' do
       include_context 'a booking created with all seats occupied'
-
-      it 'returns 422' do
-        expect(api_response.status).to eq(422)
-      end
-
-      it 'returns error' do
-        expect(api_response_as_json.keys).to include('error')
-        expect(api_response_as_json['error']).to eq('Movie for this date is fully booked')
-      end
+      it_behaves_like 'endpoint returning error message', 422, 'Movie for this date is fully booked'
     end
 
     context 'creates new booking ' do
-      it 'returns 201' do
-        expect(api_response.status).to eq(201)
-      end
-
+      it_behaves_like 'endpoint responding with', 201, Hash
       it 'returns no errors' do
         expect(api_response_as_json['error']).to be_nil
       end
@@ -162,7 +119,7 @@ describe AwesomeApi::V1::Bookings, type: :api do
     end
 
     context 'given empty date range' do
-      let(:api_params) { { date_range: { from: (Date.yesterday - 1.day), to: Date.yesterday } } }
+      let(:api_params) { { date_range: { from: (Date.today - 1.year), to: Date.today - 1.month } } }
 
       it 'returns no bookings' do
         expect(api_response_as_json).to be_empty
@@ -177,14 +134,7 @@ describe AwesomeApi::V1::Bookings, type: :api do
 
     let(:api_params) { { on_date: Date.today } }
 
-    it 'returns 200' do
-      expect(api_response.status).to eq(200)
-    end
-
-    it 'returns a list of bookings' do
-      expect(api_response_as_json).to be_a_kind_of Array
-    end
-
+    it_behaves_like 'endpoint responding with', 200, Array
     it 'is dry-schema' do
       validation_result = api_schema.call(api_response_as_json.first)
       expect(validation_result.success?).to be_truthy

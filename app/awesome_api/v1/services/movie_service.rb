@@ -8,7 +8,7 @@ module V1
     include DbService
     include Dry::Transaction
 
-    WEEK_DAY_ABBR_REGEX = /^(Mon|Tue|Wed|Thu|Fri)$/i.freeze
+    WEEK_DAY_ABBR_REGEX = /^(Mon|Tue|Wed|Thu|Fri|Sat|Sun)$/i.freeze
 
     step :validate
     step :create
@@ -18,7 +18,7 @@ module V1
     def validate(movie_params)
       screening_days_valid = movie_params['screening_days'].split(',').map(&method(:valid_week_day?))
 
-      return Failure('Screening days should be within Mon,Tue,Wed,Thu,Fri') unless screening_days_valid.all?
+      return Failure('Screening days should be within ' + Date::ABBR_DAYNAMES.join(',')) unless screening_days_valid.all?
 
       Success(movie_params)
     end
@@ -51,7 +51,7 @@ module V1
 
     def extract_day_abbr(input)
       day_abbr = input['day_of_week']
-      valid_input = %w[Mon Tue Wed Thu Fri Sat].include?(day_abbr)
+      valid_input = ::Date::ABBR_DAYNAMES.include?(day_abbr)
       return Failure('Provide valid week day abbr') unless valid_input
 
       Success(day_abbr)
